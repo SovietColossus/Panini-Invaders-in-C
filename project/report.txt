@@ -1,0 +1,8 @@
+Name: Gleb Alexeev
+Partner: Taylor Ball
+
+We both contributed to the game mechanics, and the proper structurization of things in the code. Taylor did the shooting aliens and moving back and forth, and I helped him find bugs and get rid of them. I did the main menu and sound, and worked with the SD card and made everything look like it was supposed to. So all in all, it was a pretty evenly balanced out project, we both worked on it, Taylor did a lot of writing, but it worked in the end!
+
+The worst challenge that I still hate that we came upon was the lab12 not playing sound correctly. The AI's didn't know why, we didn't know why but it worked out in the end for lab12. The only thing that actually would work is really small files the size of thermo. So we dealt with that. Another issue is just debugging. Taylor included a lot of flags and such, so it was really hard to GDB, and printf debug it. For example, occasinal aliens wouldn't die because of getting shot, or it was impossible to win, great things happened!
+
+If we could start it over, we would probably structure it a little differently and make it way more organized. All in all, it's out baby, it looks great, works great, but given another week or so, we could polish it to perfection.

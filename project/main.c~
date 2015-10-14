@@ -1,0 +1,227 @@
+#include <stm32f30x.h> // Pull in include files for F30x standard drivers 
+#include <f3d_led.h> // Pull in include file for the local drivers
+#include <f3d_uart.h>
+#include <f3d_gyro.h>
+#include <f3d_lcd_sd.h>
+#include <f3d_i2c.h>
+#include <f3d_accel.h>
+#include <f3d_mag.h>
+#include <f3d_nunchuk.h>
+#include <f3d_rtc.h>
+#include <f3d_systick.h>
+#include <f3d_timer2.h>
+#include <f3d_dac.h>
+#include <f3d_systick.h>
+#include <ff.h>
+#include <diskio.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TIMER 20000
+int matrix[11][11];
+int flag = 0;
+int shipPosition = 0;
+uint16_t bulletColor[4] = {WHITE, WHITE, WHITE, WHITE};
+uint16_t bulletReset[4] = {BLACK, BLACK, BLACK, BLACK};
+nunchuk_t nunData;
+int score;
+char a[20];
+
+void initializeAliens(){
+  int i, j;
+  for(i=0; i<11; i++){
+      for(j=0; j<11; j++){
+	if(i>=0 && i<=4 && j>=1 && j<=9){
+	  matrix[i][j] = 1;
+	}
+	else if(i==10 && j==5) {
+	  matrix[i][j] = -1;
+	  shipPosition = 5;
+	}
+	else
+	  matrix[i][j] = 0;
+      }
+    }
+}
+
+void initialPaint(){
+  int i, j;
+  char whatever = 'A';
+  for(i=0; i<11; i++){
+    for(j=0; j<11; j++){
+      if(matrix[i][j] == 1) {
+	f3d_lcd_drawChar(9+10*j,25+10*i,'A',WHITE,BLACK);
+      } else if (matrix[i][j] == -1) {
+	f3d_lcd_drawChar(9+10*j,25+10*i,'S',WHITE,BLACK);
+      }
+    }
+  }
+}
+
+void updateShip(int direction){
+  if (direction == 0) {
+    if (shipPosition != 0) {
+      f3d_lcd_drawChar(9+10*shipPosition, 125, 'S', BLACK, BLACK);
+      shipPosition--;
+      f3d_lcd_drawChar(9+10*shipPosition, 125, 'S', WHITE, BLACK);
+    } 
+  } else if (direction == 1) {
+    if (shipPosition != 10) {
+      f3d_lcd_drawChar(9+10*shipPosition, 125, 'S', BLACK, BLACK);
+      shipPosition++;
+      f3d_lcd_drawChar(9+10*shipPosition, 125, 'S', WHITE, BLACK);
+    } 
+  }
+}
+
+void mainMenu(void) {
+  
+}
+
+void killAlien(int column) {
+  int cell;
+  for (cell=9; cell>0; cell--) {
+    if (matrix[cell-1][column] == 1) {
+      f3d_lcd_drawChar(9+10*column,25+10*(cell-1),'A',BLACK, BLACK);
+      f3d_lcd_drawChar(9+10*column,25+10*(cell-1),'o',RED, BLACK);
+      delay(10);
+      f3d_lcd_drawChar(9+10*column,25+10*(cell-1),'o',BLACK, BLACK);
+      f3d_lcd_drawChar(9+10*column,25+10*(cell-1),'O',RED, BLACK);
+      delay(10);
+      f3d_lcd_drawChar(9+10*column,25+10*(cell-1),'O',BLACK, BLACK);
+      matrix[cell-1][column] = 0;
+      score += 20;
+      sprintf(a, "%i", score);
+      f3d_lcd_drawString(40,5, a, WHITE, BLACK);
+      break;
+    } else {
+      //do animation
+      int ballBottom;
+      int counterNun = 0;
+      int jx = nunData.jx;
+      for(ballBottom=(25+cell*10); ballBottom>((25+(cell-1)*10)); ballBottom--) {
+	f3d_lcd_setAddrWindow (12+10*column,ballBottom-1,13+10*column,ballBottom,MADCTLGRAPHICS);
+	f3d_lcd_pushColor(bulletColor,4);
+	f3d_nunchuk_read(&nunData);
+	if(jx > 253 || jx < 2 && counterNun > 6) {
+	  if(flag) {
+	    if(jx > 253 && counterNun > 6) {
+	      updateShip(1); //going right
+	      counterNun = 0;
+	    }
+	    else if(jx < 2 && counterNun > 6) {
+	      updateShip(0); //going left
+	      counterNun = 0;
+	    }
+	    flag = 0;
+	  }
+	  else {
+	    flag = 1;
+	  }	
+	}
+	counterNun++;
+	f3d_lcd_setAddrWindow (12+10*column,ballBottom-1,13+10*column,ballBottom,MADCTLGRAPHICS);
+	f3d_lcd_pushColor(bulletReset,4); 
+      }
+    }
+  }
+}
+
+void updateAlien(){
+}
+
+
+
+//Functions that contain the necessary information to play a .wav file.
+
+int main(void) { 
+  setvbuf(stdin, NULL, _IONBF, 0);
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
+
+  f3d_uart_init();
+  delay(10);
+  f3d_timer2_init();
+  delay(10);
+  f3d_i2c1_init();
+  delay(100);
+  f3d_nunchuk_init();
+  delay(10);
+  f3d_dac_init();
+  delay(10);
+  f3d_delay_init();
+  delay(10);
+  f3d_rtc_init();
+  delay(10);
+  f3d_systick_init();
+  delay(10);
+  f3d_lcd_init();
+  delay(10);
+
+  f3d_lcd_fillScreen(BLACK);
+
+  
+  printf("Reset\n");
+  int jx;
+  int counterNun = 0;
+  int counterPlus = 0;
+  int z;
+  int c;
+  f3d_nunchuk_read(&nunData);
+  while(c != 1) {
+    f3d_nunchuk_read(&nunData);
+    //Main menu
+    
+  }
+
+  f3d_lcd_fillScreen(BLACK);
+  initializeAliens();
+  initialPaint();
+
+  f3d_lcd_drawString(5,5,"Score:",WHITE,BLACK);
+  f3d_lcd_drawString(40,5,"0",WHITE,BLACK);
+  f3d_lcd_drawString(65,5,"Life:",WHITE,BLACK);
+
+  while(1) {
+    counterNun++;
+    counterPlus++;
+    f3d_nunchuk_read(&nunData);
+    jx = nunData.jx;
+    z = nunData.z;
+    
+    if(z == 1 && counterPlus > 10) {
+      killAlien(shipPosition);
+    }
+
+    if(jx > 245 || jx < 10 && counterNun > 10) {
+      if(flag) {
+	if(jx > 245 && counterNun > 10) {
+	  updateShip(1); //going right
+	  counterNun = 0;
+	}
+	else if(jx < 10 && counterNun > 10) {
+	  updateShip(0); //going left
+	  counterNun = 0;
+	}
+	flag = 0;
+      }
+      else {
+	flag = 1;
+      }	
+    }
+  }
+}
+
+
+
+
+#ifdef USE_FULL_ASSERT
+
+void assert_failed(uint8_t* file, uint32_t line) {
+  /* Infinite loop */
+  /* Use GDB to find out why we're here */
+  while (1);
+}
+#endif

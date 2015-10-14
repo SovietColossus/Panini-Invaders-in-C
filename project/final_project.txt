@@ -1,0 +1,39 @@
+Date: 05/01/2015
+Person 1: Taylor Ball
+Person 2: Gleb Alexeev
+
+Project Name: Panini Invaders
+
+Description of game concept and core functionality:
+
+	Game concept: It's like space invaders, except with paninis
+	and on the budget scale of an STM-32... pretty ritzy.
+
+	Pretty much, this game is insane and you shoot paninis with your
+	'S' (Ship, student, soul, spoon, servant...). You get points as
+	you kill paninis or if you go into insane mode by holding c.
+	It is possible to win... just really hard. Oh, and you get three
+	lives because the paninis can shoot back at you as they move down.
+	If they move all the way down or kill you with bullets, you lose...
+	sorry? If you win though, you get the message we all aspire for.
+
+	It's pretty functional... just make sure your nunchuk is plugged in
+	and hope!
+
+Task Breakdown between partners:
+
+	Task			Person	Description
+
+	Aliens shooting:	Taylor	Collisions with bottom, ship, ball
+	Randomness:		Taylor	Used for alien shooting
+	User shooting:		Taylor	Collisions with top, aliens, ball
+	User movement:		Taylor	Do this while other stuff happens
+	Alien movement:		Taylor	Make this go smoothly/fast
+	Lives:			Taylor	Make it less impossible
+	Audio!!!:		Gleb	Handle this nightmare and get wavs
+	Images:			Gleb	Make the custom main menu
+	Main Menu:		Gleb	Make everything look nice
+	Nunchuk loops		Gleb	Used for win screen, gameover, menu
+	Scoring:		Gleb	How do you get points?
+	Board Layout		Both	Pixel by pixel layout of everything
+	
